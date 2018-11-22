@@ -12,6 +12,11 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.get('/', (req, res) => res.send('Welcome to the updater 🤪'))
 
+app.get('/update', async (req, res, next) => {
+  const output = await createOrUpdateProject(req.query)
+    .catch(err => next(err))
+  res.send(output)
+})
 app.post('/update', async (req, res, next) => {
   const output = await createOrUpdateProject(req.body)
     .catch(err => next(err))
