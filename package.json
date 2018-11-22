@@ -1,0 +1,15 @@
+{
+  "name": "git-project-updater",
+  "version": "0.0.0",
+  "main": "app/index.js",
+  "scripts": {
+    "start": "node app"
+  },
+  "author": "Florent Detry <florent@fdetry.be> (http://fdetry.be/)",
+  "dependencies": {
+    "boom": "^7.2.2",
+    "express": "^4.16.4",
+    "fs-extra": "^7.0.1",
+    "simple-git": "^1.107.0"
+  }
+}
