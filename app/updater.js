@@ -6,6 +6,10 @@ const projects = JSON.parse(process.env.PROJECTS || [])
 const GIT_SSH_COMMAND = "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
 
 const createOrUpdateProject = async ({ projectName, reference }) => {
+  if (!projectName || !reference) {
+    throw Boom.badRequest()
+  }
+
   const project = projects.find((v) => v.name === projectName)
   if (!project) {
     throw Boom.notFound('Project not found')

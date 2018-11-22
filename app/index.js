@@ -10,27 +10,23 @@ const port = process.env.PORT || 3000
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-app.get('/', function (req, res) {
-  res.send('Welcome to the updater 🤪')
-})
+app.get('/', (req, res) => res.send('Welcome to the updater 🤪'))
 
 app.post('/update', async (req, res, next) => {
-  if (!req.body.projectName || !req.body.reference) {
-    const err = Boom.badRequest()
+  const output = await createOrUpdateProject(req.body)
+    .catch(err => next(err))
+  res.send(output)
+})
+
+app.use((err, req, res, next) => {
+  if (!err) {
+    return next()
+  }
+  if (err.isBoom) {
     res.status(err.output.payload.statusCode)
     return res.send(err.output.payload.message)
-  }
-  try {
-    const output = await createOrUpdateProject(req.body)
-    res.send(output)
-  } catch (err) {
-    debugger
-    if (err.isBoom) {
-      res.status(err.output.payload.statusCode)
-      return res.send(err.output.payload.message)
-    } else {
-      next(err)
-    }
+  } else {
+    next(err)
   }
 })
 
