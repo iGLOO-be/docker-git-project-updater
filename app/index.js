@@ -12,13 +12,12 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.get('/', (req, res) => res.send('Welcome to the updater 🤪'))
 
-app.get('/update', async (req, res, next) => {
-  const output = await createOrUpdateProject(req.query)
-    .catch(err => next(err))
-  res.send(output)
-})
 app.post('/update', async (req, res, next) => {
-  const output = await createOrUpdateProject(req.body)
+  const parameters = {
+    projectName: req.query.projectName || req.body.projectName,
+    reference: req.query.reference || req.body.reference
+  }
+  const output = await createOrUpdateProject(parameters)
     .catch(err => next(err))
   res.send(output)
 })
