@@ -2,9 +2,11 @@
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
+const Boom = require('boom')
 const { createOrUpdateProject } = require('./updater')
 
 const port = process.env.PORT || 3000
+const authorizationKey = process.env.AUTHORIZATION_KEY
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -12,6 +14,13 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.get('/', (req, res) => res.send('Welcome to the updater 🤪'))
 
 app.post('/update', async (req, res, next) => {
+  if (authorizationKey) {
+    const key = req.query.key || req.body.key
+    if (key !== authorizationKey) {
+      return next(Boom.unauthorized())
+    }
+  }
+
   const parameters = {
     projectName: req.query.projectName || req.body.projectName,
     reference: req.query.reference || req.body.reference

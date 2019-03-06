@@ -12,6 +12,7 @@ docker run --rm -it -p 3000:3000 \
 
 ## ENV
 
+- `AUTHORIZATION_KEY`
 - `FORCE_OWNER` : chown recursive before update
 - `GIT_SSH_COMMAND_ARGS` : additional ssh args
 - `PROJECTS` :
