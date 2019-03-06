@@ -2,8 +2,13 @@
 const Boom = require('boom')
 const fs = require('fs-extra')
 const gitP = require('simple-git/promise')
-const projects = JSON.parse(process.env.PROJECTS || [])
-const GIT_SSH_COMMAND = "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
+const uidNumber = require('uid-number')
+const chownr = require('chownr')
+
+const projects = JSON.parse(process.env.PROJECTS || '[]')
+const GIT_SSH_COMMAND_ARGS = process.env.GIT_SSH_COMMAND_ARGS || ''
+const GIT_SSH_COMMAND = `ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ${GIT_SSH_COMMAND_ARGS}`;
+const repositoryOwner = process.env.FORCE_OWNER
 
 const createOrUpdateProject = async ({ projectName, reference }) => {
   if (!projectName || !reference) {
@@ -50,7 +55,7 @@ const createProject = async ({ projectPath, reference, repo }) => {
     .clone(repo, projectPath)
     .then(() => updateProject({ projectPath, reference, repo }, output))
     .catch((err) => {
-      throw Boom.boomify(err, { decorate: { error, output }, statusCode: 400 });
+      throw Boom.boomify(err, { decorate: { commandError: error, commandOutput: output }, statusCode: 400 });
     })
 }
 
@@ -81,14 +86,54 @@ const updateProject = async ({ projectPath, reference }, _output = []) => {
       })
     })
 
+  if (repositoryOwner) {
+    await chownRepository(projectPath)
+  }
+
   return git
     .fetch()
     .then(() => git.checkout(reference))
     .then(() => git.submoduleUpdate(['--init', '--recursive']))
     .then(() => output.join('\r\n'))
     .catch((err) => {
-      throw Boom.boomify(err, { decorate: { error, output }, statusCode: 400 });
+      throw Boom.boomify(
+        err,
+        {
+          decorate: { commandError: error, commandOutput: output },
+          statusCode: 400
+        }
+      );
     })
+}
+
+const resolveOwner = (userName) => {
+  return new Promise((resolve, reject) => {
+    uidNumber(userName, (err, uid, gid) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve({ uid, gid })
+      }
+    })
+  })
+}
+
+const chownRepository = async (projectPath) => {
+  if (repositoryOwner) {
+    const { uid, gid } = await resolveOwner(repositoryOwner)
+    if (uid) {
+      return new Promise((resolve, reject) => {
+        chownr(projectPath, uid, gid || uid, (err) => {
+          if (err) {
+            return reject(err)
+          }
+          resolve()
+        })
+      })
+    }
+  }
+
+  return Promise.resolve()
 }
 
 module.exports = {

@@ -7,9 +7,11 @@
   },
   "author": "Florent Detry <florent@fdetry.be> (http://fdetry.be/)",
   "dependencies": {
-    "boom": "^7.2.2",
+    "boom": "^7.3.0",
+    "chownr": "^1.1.1",
     "express": "^4.16.4",
     "fs-extra": "^7.0.1",
-    "simple-git": "^1.107.0"
+    "simple-git": "^1.107.0",
+    "uid-number": "0.0.6"
   }
 }

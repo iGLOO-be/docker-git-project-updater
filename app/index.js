@@ -3,7 +3,6 @@ const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const { createOrUpdateProject } = require('./updater')
-const Boom = require('boom')
 
 const port = process.env.PORT || 3000
 
@@ -28,7 +27,16 @@ app.use((err, req, res, next) => {
   }
   if (err.isBoom) {
     res.status(err.output.payload.statusCode)
-    return res.send(err.output.payload.message)
+    const output = [err.output.payload.message]
+    if (err.commandError) {
+      output.push('Command error:')
+      output.push(err.commandError.join('\r\n'))
+    }
+    if (err.commandOutput) {
+      output.push('Command output:')
+      output.push(err.commandOutput.join('\r\n'))
+    }
+    return res.send(output.join('\r\n'))
   } else {
     next(err)
   }
