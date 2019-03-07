@@ -87,6 +87,7 @@ const updateProject = async ({ projectPath, reference }, _output = []) => {
     })
 
   if (repositoryOwner) {
+    output.push(`===> chown ${repositoryOwner}`)
     await chownRepository(projectPath)
   }
 
