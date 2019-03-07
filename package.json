@@ -1,6 +1,6 @@
 {
   "name": "git-project-updater",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "app/index.js",
   "scripts": {
     "start": "node app"
