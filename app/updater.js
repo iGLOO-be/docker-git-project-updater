@@ -2,8 +2,7 @@
 const Boom = require('boom')
 const fs = require('fs-extra')
 const gitP = require('simple-git/promise')
-const uidNumber = require('uid-number')
-const chownr = require('chownr')
+const { exec } = require('child_process')
 
 const projects = JSON.parse(process.env.PROJECTS || '[]')
 const GIT_SSH_COMMAND_ARGS = process.env.GIT_SSH_COMMAND_ARGS || ''
@@ -106,31 +105,16 @@ const updateProject = async ({ projectPath, reference }, _output = []) => {
     })
 }
 
-const resolveOwner = (userName) => {
-  return new Promise((resolve, reject) => {
-    uidNumber(userName, (err, uid, gid) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve({ uid, gid })
-      }
-    })
-  })
-}
-
 const chownRepository = async (projectPath) => {
   if (repositoryOwner) {
-    const { uid, gid } = await resolveOwner(repositoryOwner)
-    if (uid) {
-      return new Promise((resolve, reject) => {
-        chownr(projectPath, uid, gid || uid, (err) => {
-          if (err) {
-            return reject(err)
-          }
-          resolve()
-        })
+    return new Promise((resolve, reject) => {
+      exec(`chown -R ${repositoryOwner} ${projectPath}`, (err, stdout, stderr) => {
+        if (err) {
+          return reject(err)
+        }
+        resolve(stdout)
       })
-    }
+    })
   }
 
   return Promise.resolve()
