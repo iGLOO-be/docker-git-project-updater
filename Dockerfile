@@ -1,4 +1,4 @@
-FROM node:10-alpine
+FROM node:10.15.2
 
 ENV NODE_ENV=production
 ENV PORT 3000
@@ -6,7 +6,7 @@ ENV PROJECTS []
 
 WORKDIR /app
 
-RUN apk update -q && apk add -q jq curl ca-certificates openssh git
+RUN apt update -qq && apt install -y jq curl ca-certificates git
 
 COPY . /app
 
